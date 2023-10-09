@@ -22,6 +22,11 @@ updateGhostButtonText();
 app.append(ghostButton);
 app.append(ghostCountLabel);
 
+//Set ghost amount to increment each second
+setInterval(function () {
+  ghostButtonClick();
+}, 1000);
+
 const ghostClickAmount = 1;
 function ghostButtonClick() {
   ghostCount += ghostClickAmount;
