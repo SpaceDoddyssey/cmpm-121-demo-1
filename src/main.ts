@@ -33,6 +33,7 @@ interface shopItem {
   symbol: string;
   cost: number;
   rate: number;
+  description: string;
   count: number;
 }
 
@@ -43,28 +44,49 @@ const availableItems: shopItem[] = [
     symbol: "💀",
     cost: 10,
     rate: 0.1,
+    description: "Spooky! Scary!",
+    count: 0,
+  },
+  {
+    name: "zombie",
+    ID: 1,
+    symbol: "🧟",
+    cost: 60,
+    rate: 0.5,
+    description: "It's actually about the Troubles!",
     count: 0,
   },
   {
     name: "vampire",
-    ID: 1,
+    ID: 2,
     symbol: "🧛",
     cost: 100,
     rate: 2.0,
+    description: "I'm going out to get a bite to drink",
+    count: 0,
+  },
+  {
+    name: "ogre",
+    ID: 3,
+    symbol: "👹",
+    cost: 600,
+    rate: 20,
+    description: "Object-Oriented Graphics Rendering Engine",
     count: 0,
   },
   {
     name: "devil",
-    ID: 2,
+    ID: 4,
     symbol: "😈",
     cost: 1000,
     rate: 50.0,
+    description: "Not just into contract law!",
     count: 0,
   },
 ];
 const buttons: HTMLButtonElement[] = [];
 const countLabels: HTMLDivElement[] = [];
-const descLabels: HTMLDivElement[] = [];
+const statsLabels: HTMLDivElement[] = [];
 
 availableItems.forEach((item) => {
   const button = document.createElement("button");
@@ -77,14 +99,17 @@ availableItems.forEach((item) => {
   const countLabel = document.createElement("div");
   countLabels.push(countLabel);
   const descLabel = document.createElement("div");
-  descLabels.push(descLabel);
+  const statsLabel = document.createElement("div");
+  statsLabels.push(statsLabel);
 
   countLabel.textContent = `0 ${item.name}s!`;
-  descLabel.textContent = `(${item.cost} ghosts, +${item.rate} ghosts/sec)`;
+  descLabel.textContent = item.description;
+  statsLabel.textContent = `(${item.cost} ghosts, +${item.rate} ghosts/sec)`;
 
   app.append(button);
   app.append(countLabel);
   app.append(descLabel);
+  app.append(statsLabel);
 });
 
 for (let i = -1; i < availableItems.length; i++) {
@@ -107,7 +132,7 @@ function buttonClick(buttonID: number) {
     ghostCount -= item.cost;
     item.cost *= priceMultiplier;
     item.cost = numberRounder(item.cost, 3);
-    descLabels[
+    statsLabels[
       item.ID
     ].textContent = `(${item.cost} ghosts, +${item.rate} ghosts/sec)`;
 
