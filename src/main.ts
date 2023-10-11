@@ -6,9 +6,7 @@ const gameName = "SpaceDoddyssey's Spooktacular Clicker";
 
 document.title = gameName;
 
-const skelPrice = 10;
-const vampPrice = 100;
-const devilPrice = 1000;
+const priceMultiplier = 1.15;
 
 const header = document.createElement("h1");
 header.innerHTML = gameName;
@@ -29,53 +27,65 @@ app.append(ghostButton);
 app.append(ghostCountLabel);
 app.append(ghostPerSecLabel);
 
-//Skeleton button and label
-const skelButton = document.createElement("button");
-skelButton.type = "button";
-skelButton.textContent = "💀";
-skelButton.disabled = true;
-skelButton.onclick = buttonClick.bind(this, "skeleton");
+interface shopItem {
+  name: string;
+  ID: number;
+  symbol: string;
+  cost: number;
+  rate: number;
+  count: number;
+}
 
-let skelCount: number = 0;
-const skelCountLabel = document.createElement("div");
-const skelDescLabel = document.createElement("div");
-skelDescLabel.textContent = "(10 ghosts, +0.1 ghosts/sec)";
+const availableItems: shopItem[] = [
+  {
+    name: "skeleton",
+    ID: 0,
+    symbol: "💀",
+    cost: 10,
+    rate: 0.1,
+    count: 0,
+  },
+  {
+    name: "vampire",
+    ID: 1,
+    symbol: "🧛",
+    cost: 100,
+    rate: 2.0,
+    count: 0,
+  },
+  {
+    name: "devil",
+    ID: 2,
+    symbol: "😈",
+    cost: 1000,
+    rate: 50.0,
+    count: 0,
+  },
+];
+const buttons: HTMLButtonElement[] = [];
+const countLabels: HTMLDivElement[] = [];
+const descLabels: HTMLDivElement[] = [];
 
-app.append(skelButton);
-app.append(skelCountLabel);
-app.append(skelDescLabel);
+availableItems.forEach((item) => {
+  const button = document.createElement("button");
+  buttons.push(button);
+  button.type = "button";
+  button.textContent = item.symbol;
+  button.disabled = true;
+  button.addEventListener("click", buttonClick.bind(globalThis, item.name));
 
-//Vampire button and label
-const vampButton = document.createElement("button");
-vampButton.type = "button";
-vampButton.textContent = "🧛";
-vampButton.disabled = true;
-vampButton.onclick = buttonClick.bind(this, "vampire");
+  const countLabel = document.createElement("div");
+  countLabels.push(countLabel);
+  const descLabel = document.createElement("div");
+  descLabels.push(descLabel);
 
-let vampCount: number = 0;
-const vampCountLabel = document.createElement("div");
-const vampDescLabel = document.createElement("div");
-vampDescLabel.textContent = "(100 ghosts, +2 ghosts/sec)";
+  countLabel.textContent = `0 ${item.name}s!`;
+  descLabel.textContent = `(${item.cost} ghosts, +${item.rate} ghosts/sec)`;
 
-app.append(vampButton);
-app.append(vampCountLabel);
-app.append(vampDescLabel);
-
-//Vampire button and label
-const devilButton = document.createElement("button");
-devilButton.type = "button";
-devilButton.textContent = "😈";
-devilButton.disabled = true;
-devilButton.onclick = buttonClick.bind(this, "devil");
-
-let devilCount: number = 0;
-const devilCountLabel = document.createElement("div");
-const devilDescLabel = document.createElement("div");
-devilDescLabel.textContent = "(1000 ghosts, +50 ghosts/sec)";
-
-app.append(devilButton);
-app.append(devilCountLabel);
-app.append(devilDescLabel);
+  app.append(button);
+  app.append(countLabel);
+  app.append(descLabel);
+});
 
 updateButtonText("ghost");
 updateButtonText("skeleton");
@@ -84,29 +94,37 @@ updateButtonText("devil");
 
 //Function called when you click one of the buttons
 function buttonClick(buttonName: string) {
+  let ID = -1;
   switch (buttonName) {
     case "ghost":
       ghostCount += 1;
-      break;
+      updateButtonText(buttonName);
+      checkAndEnableButtons();
+      return;
     case "skeleton":
-      skelCount += 1;
-      ghostIncreasePerSec += 0.1;
-      ghostCount -= skelPrice;
+      ID = 0;
       break;
     case "vampire":
-      vampCount += 1;
-      ghostIncreasePerSec += 2.0;
-      ghostCount -= vampPrice;
+      ID = 1;
       break;
     case "devil":
-      devilCount += 1;
-      ghostIncreasePerSec += 50.0;
-      ghostCount -= devilPrice;
+      ID = 2;
       break;
     default:
       console.error("Clicked a button that doesn't exist? Spooky");
       return;
   }
+  const item = availableItems[ID];
+  item.count += 1;
+  ghostCount -= item.cost;
+  item.cost *= priceMultiplier;
+  item.cost = numberRounder(item.cost, 3);
+  descLabels[
+    item.ID
+  ].textContent = `(${item.cost} ghosts, +${item.rate} ghosts/sec)`;
+
+  ghostIncreasePerSec += item.rate;
+  ghostIncreasePerSec = numberRounder(ghostIncreasePerSec, 3);
   ghostPerSecLabel.textContent = `${ghostIncreasePerSec} ghosts/sec`;
   updateButtonText(buttonName);
   checkAndEnableButtons();
@@ -122,18 +140,18 @@ function updateButtonText(buttonName: string) {
       return;
     }
     case "skeleton": {
-      count = skelCount;
-      label = skelCountLabel;
+      count = availableItems[0].count;
+      label = countLabels[0];
       break;
     }
     case "vampire": {
-      count = vampCount;
-      label = vampCountLabel;
+      count = availableItems[1].count;
+      label = countLabels[1];
       break;
     }
     case "devil": {
-      count = devilCount;
-      label = devilCountLabel;
+      count = availableItems[2].count;
+      label = countLabels[2];
       break;
     }
     default: {
@@ -142,6 +160,8 @@ function updateButtonText(buttonName: string) {
     }
   }
 
+  count = availableItems[0].count;
+  label = countLabels[0];
   let resultString = `${count} ` + buttonName;
   if (count != 1) {
     resultString += `s`;
@@ -168,7 +188,12 @@ requestAnimationFrame(perFrameFunction);
 //Checks ghostCount and enables or disables buttons
 //that you can/can't afford to press
 function checkAndEnableButtons() {
-  skelButton.disabled = ghostCount < skelPrice;
-  vampButton.disabled = ghostCount < vampPrice;
-  devilButton.disabled = ghostCount < devilPrice;
+  for (let i = 0; i < availableItems.length; i++) {
+    buttons[i].disabled = ghostCount < availableItems[i].cost;
+  }
+}
+
+function numberRounder(val: number, numPlaces: number): number {
+  const mul = 10 ** numPlaces;
+  return Math.round(val * mul) / mul;
 }
