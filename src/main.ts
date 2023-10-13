@@ -104,12 +104,12 @@ availableItems.forEach((item) => {
 
   countLabel.textContent = `0 ${item.name}s!`;
   descLabel.textContent = item.description;
-  statsLabel.textContent = `(${item.cost} ghosts, +${item.rate} ghosts/sec)`;
+  statsLabel.textContent = `Cost: ${item.cost} ghosts, Rate: +${item.rate} ghosts/sec)`;
 
+  button.append(countLabel);
+  button.append(descLabel);
+  button.append(statsLabel);
   app.append(button);
-  app.append(countLabel);
-  app.append(descLabel);
-  app.append(statsLabel);
 });
 
 for (let i = -1; i < availableItems.length; i++) {
